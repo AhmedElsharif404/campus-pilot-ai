@@ -1,0 +1,20 @@
+{
+  "name": "campus-pilot-ai",
+  "version": "0.1.0",
+  "private": true,
+  "packageManager": "pnpm@10.17.1",
+  "scripts": {
+    "dev": "pnpm --filter @campuspilot/web dev",
+    "build": "pnpm --filter @campuspilot/web build",
+    "lint": "pnpm --filter @campuspilot/web lint",
+    "typecheck": "pnpm --filter @campuspilot/web typecheck",
+    "test": "pnpm --filter @campuspilot/web test",
+    "test:e2e": "pnpm --filter @campuspilot/web test:e2e",
+    "openapi": "python scripts/export_openapi.py",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
+  },
+  "devDependencies": {
+    "prettier": "3.6.2"
+  }
+}

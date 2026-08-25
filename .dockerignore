@@ -1,0 +1,13 @@
+.git
+.next
+node_modules
+coverage
+playwright-report
+test-results
+__pycache__
+.pytest_cache
+.mypy_cache
+.ruff_cache
+*.sqlite3
+.env
+docs/screenshots

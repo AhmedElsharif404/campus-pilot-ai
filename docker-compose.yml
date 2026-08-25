@@ -1,0 +1,104 @@
+services:
+  postgres:
+    image: pgvector/pgvector:pg17
+    environment:
+      POSTGRES_DB: campus_pilot
+      POSTGRES_USER: campus
+      POSTGRES_PASSWORD: campus
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U campus -d campus_pilot"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  redis:
+    image: redis:8-alpine
+    command: redis-server --save 60 1 --loglevel warning
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  minio:
+    image: minio/minio:RELEASE.2025-09-07T16-13-09Z
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: campus
+      MINIO_ROOT_PASSWORD: local-minio-password
+    ports:
+      - "9001:9001"
+    volumes:
+      - minio-data:/data
+
+  api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    environment:
+      CAMPUS_ENVIRONMENT: development
+      CAMPUS_DATABASE_URL: postgresql+asyncpg://campus:campus@postgres:5432/campus_pilot
+      CAMPUS_REDIS_URL: redis://redis:6379/0
+      CAMPUS_JWT_SECRET: local-compose-secret-change-before-deploying
+      CAMPUS_UPLOAD_DIR: /app/api/uploads/quarantine
+      CAMPUS_AI_PROVIDER: mock
+      CAMPUS_AUTO_CREATE_SCHEMA: "true"
+    ports:
+      - "8000:8000"
+    volumes:
+      - document-quarantine:/app/api/uploads/quarantine
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://localhost:8000/health/ready')",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+
+  worker:
+    build:
+      context: .
+      dockerfile: apps/worker/Dockerfile
+    environment:
+      CAMPUS_DATABASE_URL: postgresql+asyncpg://campus:campus@postgres:5432/campus_pilot
+      CAMPUS_REDIS_URL: redis://redis:6379/0
+      CAMPUS_UPLOAD_DIR: /app/api/uploads/quarantine
+      CAMPUS_AI_PROVIDER: mock
+      CAMPUS_AUTO_CREATE_SCHEMA: "false"
+    volumes:
+      - document-quarantine:/app/api/uploads/quarantine
+    depends_on:
+      api:
+        condition: service_healthy
+
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+    environment:
+      API_ORIGIN: http://api:8000
+      NEXT_PUBLIC_APP_ORIGIN: http://localhost:3000
+    ports:
+      - "3000:3000"
+    depends_on:
+      api:
+        condition: service_healthy
+
+volumes:
+  postgres-data:
+  redis-data:
+  minio-data:
+  document-quarantine:

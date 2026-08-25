@@ -1,0 +1,12 @@
+[build-system]
+requires = ["hatchling>=1.27"]
+build-backend = "hatchling.build"
+
+[project]
+name = "campus-pilot-worker"
+version = "0.1.0"
+requires-python = ">=3.12"
+dependencies = ["campus-pilot-api"]
+
+[tool.hatch.build.targets.wheel]
+packages = ["campus_worker"]

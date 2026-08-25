@@ -1,0 +1,13 @@
+{
+  "id": "bio214-v1",
+  "document": [
+    "BIO 214: Cell Biology\nInstructor: Dr. Maya Chen\nClass meets M/W 9:30–10:45, Science Hall 204",
+    "Grading\nCell Membrane Lab Report — due Sept. 18 by 11:59pm\nMidterm Exam — Monday, October 12 during regular class hours."
+  ],
+  "expected": {
+    "course": "Cell Biology",
+    "instructor": "Dr. Maya Chen",
+    "minimum_grounded_fields": 4,
+    "forbidden_hallucinations": ["final exam", "Tuesday lecture"]
+  }
+}

@@ -1,0 +1,12 @@
+title = "CampusPilot secret scanning"
+
+[extend]
+useDefault = true
+
+[[allowlists]]
+description = "Documented local-only demo credentials"
+paths = [
+  '''README\.md''',
+  '''apps/api/campus_pilot/seed\.py''',
+  '''apps/web/components/auth-form\.tsx'''
+]
