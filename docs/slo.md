@@ -1,5 +1,7 @@
 # Service levels
 
+These are proposed service-level objectives for a future university pilot. CampusPilot is not currently deployed, so the targets below are design requirements rather than measured production performance.
+
 ## Availability SLO
 
 - **SLI:** successful non-user-error API requests / eligible API requests

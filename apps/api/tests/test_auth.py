@@ -26,3 +26,9 @@ async def test_invalid_login_is_generic(client: AsyncClient) -> None:
     )
     assert response.status_code == 401
     assert response.json()["detail"] == "Invalid credentials"
+
+
+async def test_logout_requires_csrf(client: AsyncClient) -> None:
+    response = await client.post("/api/v1/auth/logout")
+    assert response.status_code == 403
+    assert response.json()["detail"] == "CSRF validation failed"

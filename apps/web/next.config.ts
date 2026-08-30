@@ -5,6 +5,10 @@ const scriptPolicy =
   process.env.NODE_ENV === "development"
     ? "script-src 'self' 'unsafe-inline' 'unsafe-eval'"
     : "script-src 'self' 'unsafe-inline'";
+const connectPolicy =
+  process.env.NODE_ENV === "development"
+    ? "connect-src 'self' http://localhost:8000"
+    : "connect-src 'self'";
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
@@ -26,7 +30,7 @@ const nextConfig: NextConfig = {
       },
       {
         key: "Content-Security-Policy",
-        value: `default-src 'self'; ${scriptPolicy}; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self' http://localhost:8000; frame-ancestors 'none'; base-uri 'self'; form-action 'self'`,
+        value: `default-src 'self'; ${scriptPolicy}; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; ${connectPolicy}; frame-ancestors 'none'; base-uri 'self'; form-action 'self'`,
       },
     ];
     return [

@@ -24,7 +24,7 @@ Student identity, course enrollment, source syllabi, extracted page text, deadli
 | Upload replay/job duplication | Retried upload produces duplicate records      | Per-user idempotency key and terminal-job short circuit                                                      | Storage object dedup/retention still needs policy                                           |
 | Queue poisoning               | Forged job ID or repeated failures             | Worker loads authoritative job from DB, bounds attempts, replaces provisional output                         | Production queue should add ACL/TLS and dead-letter monitoring                              |
 | Sensitive telemetry           | Source text appears in traces                  | Metrics use operation IDs/counters; audit metadata avoids full documents and secrets                         | Review future error logging and provider SDK defaults                                       |
-| AI cost abuse                 | Automated plan/extraction requests             | Auth, upload limits, rate limiting, idempotency, cost metric                                                 | Production needs user quotas and provider budgets                                           |
+| AI cost abuse                 | Automated plan/extraction requests             | Auth, upload limits, rate limiting, idempotency, per-execution latency/provider metadata                     | Provider-specific usage accounting, user quotas, and budgets are not implemented yet        |
 
 ## Abuse-case tests
 

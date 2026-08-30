@@ -24,6 +24,16 @@ export function UploadPanel() {
   const [state, setState] = useState<UploadState>("idle");
   const [file, setFile] = useState<File | null>(null);
   const [message, setMessage] = useState("");
+  const [usingDemoFallback, setUsingDemoFallback] = useState(false);
+
+  function csrfToken() {
+    const prefix = "campus_pilot_csrf=";
+    const cookie = document.cookie
+      .split(";")
+      .map((value) => value.trim())
+      .find((value) => value.startsWith(prefix));
+    return cookie ? decodeURIComponent(cookie.slice(prefix.length)) : null;
+  }
 
   async function accept(candidate?: File) {
     if (!candidate) return;
@@ -40,23 +50,34 @@ export function UploadPanel() {
       return;
     }
     setFile(candidate);
+    setUsingDemoFallback(false);
     setState("validating");
     await new Promise((resolve) => setTimeout(resolve, 450));
     setState("uploading");
     try {
       const body = new FormData();
       body.append("file", candidate);
+      const headers = new Headers({ "Idempotency-Key": crypto.randomUUID() });
+      const csrf = csrfToken();
+      if (csrf) headers.set("X-CSRF-Token", csrf);
       const response = await fetch("/api/v1/documents", {
         method: "POST",
         body,
-        headers: { "Idempotency-Key": crypto.randomUUID() },
+        headers,
       });
       if (!response.ok) throw new Error("API unavailable");
       setState("processing");
       await new Promise((resolve) => setTimeout(resolve, 900));
       setState("success");
     } catch {
-      // The portfolio demo remains testable without infrastructure while production uses the API path above.
+      if (process.env.NEXT_PUBLIC_DEMO_FALLBACK !== "true") {
+        setState("error");
+        setMessage(
+          "The document service could not be reached. Start the API and try again.",
+        );
+        return;
+      }
+      setUsingDemoFallback(true);
       setState("processing");
       await new Promise((resolve) => setTimeout(resolve, 1000));
       setState("success");
@@ -84,7 +105,10 @@ export function UploadPanel() {
             <CheckCircle2 /> File and MIME validated
           </li>
           <li className={state === "validating" ? "active" : "done"}>
-            <CheckCircle2 /> Secure upload complete
+            <CheckCircle2 />{" "}
+            {usingDemoFallback
+              ? "Demo fixture selected — no upload performed"
+              : "Secure upload complete"}
           </li>
           <li
             className={
@@ -100,19 +124,33 @@ export function UploadPanel() {
             ) : (
               <CheckCircle2 />
             )}{" "}
-            Pages parsed and fields extracted
+            {usingDemoFallback
+              ? "Bundled synthetic extraction loaded"
+              : "Pages parsed and fields extracted"}
           </li>
           <li className={state === "success" ? "done" : ""}>
-            <CheckCircle2 /> Structured result validated
+            <CheckCircle2 />{" "}
+            {usingDemoFallback
+              ? "Demo result ready for review"
+              : "Structured result validated"}
           </li>
         </ol>
         {state === "success" ? (
-          <button
-            className="button"
-            onClick={() => router.push("/app/review/demo")}
-          >
-            Review extracted details
-          </button>
+          <>
+            {usingDemoFallback && (
+              <p className="demo-notice" role="status">
+                Demo mode: the API was unavailable, so the next screen uses
+                bundled synthetic syllabus data. Your selected file stayed in
+                this browser and was not uploaded.
+              </p>
+            )}
+            <button
+              className="button"
+              onClick={() => router.push("/app/review/demo")}
+            >
+              Review extracted details
+            </button>
+          </>
         ) : (
           <p className="processing-time">
             Usually less than one minute. You can safely leave this page.

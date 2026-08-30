@@ -16,7 +16,7 @@ Routes accept transport schemas, perform identity/object authorization, and call
 
 ## Offline model
 
-The service worker caches the application shell and recent same-origin GET responses. IndexedDB stores explicit offline mutations for later sync. Tokens are never stored in IndexedDB or local storage. Upload and AI work require connectivity; the saved agenda and completion intent remain available.
+The service worker caches the application shell and recent same-origin GET responses. IndexedDB retains explicit low-risk completion intents. Tokens are never stored in IndexedDB or local storage. Upload and AI work require connectivity; the saved agenda and completion intent remain available. Automatic replay and conflict reconciliation are a documented next milestone, not current behavior.
 
 ## Contract flow
 

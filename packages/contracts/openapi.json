@@ -32,11 +32,7 @@
             "title": "Weight"
           }
         },
-        "required": [
-          "course_id",
-          "title",
-          "due_at"
-        ],
+        "required": ["course_id", "title", "due_at"],
         "title": "AssignmentCreate",
         "type": "object"
       },
@@ -62,12 +58,7 @@
             "type": "integer"
           }
         },
-        "required": [
-          "items",
-          "page",
-          "page_size",
-          "total"
-        ],
+        "required": ["items", "page", "page_size", "total"],
         "title": "AssignmentPage",
         "type": "object"
       },
@@ -110,13 +101,7 @@
             "title": "Weight"
           }
         },
-        "required": [
-          "course_id",
-          "title",
-          "due_at",
-          "id",
-          "status"
-        ],
+        "required": ["course_id", "title", "due_at", "id", "status"],
         "title": "AssignmentView",
         "type": "object"
       },
@@ -128,9 +113,7 @@
             "type": "string"
           }
         },
-        "required": [
-          "file"
-        ],
+        "required": ["file"],
         "title": "Body_upload_document_api_v1_documents_post",
         "type": "object"
       },
@@ -230,10 +213,7 @@
             "type": "string"
           }
         },
-        "required": [
-          "study_session_id",
-          "actual_minutes"
-        ],
+        "required": ["study_session_id", "actual_minutes"],
         "title": "CompletionRequest",
         "type": "object"
       },
@@ -259,12 +239,7 @@
             "type": "integer"
           }
         },
-        "required": [
-          "items",
-          "page",
-          "page_size",
-          "total"
-        ],
+        "required": ["items", "page", "page_size", "total"],
         "title": "CoursePage",
         "type": "object"
       },
@@ -302,14 +277,7 @@
             "title": "Summary"
           }
         },
-        "required": [
-          "id",
-          "semester_id",
-          "code",
-          "name",
-          "color",
-          "summary"
-        ],
+        "required": ["id", "semester_id", "code", "name", "color", "summary"],
         "title": "CourseView",
         "type": "object"
       },
@@ -327,10 +295,7 @@
             "type": "string"
           }
         },
-        "required": [
-          "email",
-          "password"
-        ],
+        "required": ["email", "password"],
         "title": "Credentials",
         "type": "object"
       },
@@ -349,11 +314,7 @@
             "type": "string"
           }
         },
-        "required": [
-          "document_id",
-          "extraction_job_id",
-          "status"
-        ],
+        "required": ["document_id", "extraction_job_id", "status"],
         "title": "DocumentUploadView",
         "type": "object"
       },
@@ -425,9 +386,7 @@
             "type": "string"
           }
         },
-        "required": [
-          "status"
-        ],
+        "required": ["status"],
         "title": "FieldDecision",
         "type": "object"
       },
@@ -532,11 +491,7 @@
             "type": "string"
           }
         },
-        "required": [
-          "semester_id",
-          "starts_on",
-          "ends_on"
-        ],
+        "required": ["semester_id", "starts_on", "ends_on"],
         "title": "PlanRequest",
         "type": "object"
       },
@@ -560,11 +515,7 @@
             "type": "string"
           }
         },
-        "required": [
-          "email",
-          "password",
-          "display_name"
-        ],
+        "required": ["email", "password", "display_name"],
         "title": "Registration",
         "type": "object"
       },
@@ -593,12 +544,7 @@
             "type": "string"
           }
         },
-        "required": [
-          "name",
-          "institution",
-          "starts_on",
-          "ends_on"
-        ],
+        "required": ["name", "institution", "starts_on", "ends_on"],
         "title": "SemesterCreate",
         "type": "object"
       },
@@ -624,12 +570,7 @@
             "type": "integer"
           }
         },
-        "required": [
-          "items",
-          "page",
-          "page_size",
-          "total"
-        ],
+        "required": ["items", "page", "page_size", "total"],
         "title": "SemesterPage",
         "type": "object"
       },
@@ -736,11 +677,7 @@
             "type": "string"
           }
         },
-        "required": [
-          "id",
-          "email",
-          "display_name"
-        ],
+        "required": ["id", "email", "display_name"],
         "title": "UserView",
         "type": "object"
       },
@@ -776,11 +713,7 @@
             "type": "string"
           }
         },
-        "required": [
-          "loc",
-          "msg",
-          "type"
-        ],
+        "required": ["loc", "msg", "type"],
         "title": "ValidationError",
         "type": "object"
       }
@@ -889,9 +822,7 @@
           }
         },
         "summary": "List Assignments",
-        "tags": [
-          "assignments"
-        ]
+        "tags": ["assignments"]
       },
       "post": {
         "operationId": "create_assignment_api_v1_assignments_post",
@@ -994,9 +925,7 @@
           }
         },
         "summary": "Create Assignment",
-        "tags": [
-          "assignments"
-        ]
+        "tags": ["assignments"]
       }
     },
     "/api/v1/auth/login": {
@@ -1035,23 +964,79 @@
           }
         },
         "summary": "Login",
-        "tags": [
-          "auth"
-        ]
+        "tags": ["auth"]
       }
     },
     "/api/v1/auth/logout": {
       "post": {
         "operationId": "logout_api_v1_auth_logout_post",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-CSRF-Token",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Csrf-Token"
+            }
+          },
+          {
+            "in": "cookie",
+            "name": "campus_pilot_csrf",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Campus Pilot Csrf"
+            }
+          }
+        ],
         "responses": {
           "204": {
             "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
           }
         },
         "summary": "Logout",
-        "tags": [
-          "auth"
-        ]
+        "tags": ["auth"]
       }
     },
     "/api/v1/auth/me": {
@@ -1114,9 +1099,7 @@
           }
         },
         "summary": "Me",
-        "tags": [
-          "auth"
-        ]
+        "tags": ["auth"]
       }
     },
     "/api/v1/auth/register": {
@@ -1155,9 +1138,7 @@
           }
         },
         "summary": "Register",
-        "tags": [
-          "auth"
-        ]
+        "tags": ["auth"]
       }
     },
     "/api/v1/calendar": {
@@ -1244,9 +1225,7 @@
           }
         },
         "summary": "Get Calendar",
-        "tags": [
-          "calendar"
-        ]
+        "tags": ["calendar"]
       }
     },
     "/api/v1/courses": {
@@ -1345,9 +1324,7 @@
           }
         },
         "summary": "List Courses",
-        "tags": [
-          "courses"
-        ]
+        "tags": ["courses"]
       }
     },
     "/api/v1/courses/{course_id}": {
@@ -1419,9 +1396,7 @@
           }
         },
         "summary": "Get Course",
-        "tags": [
-          "courses"
-        ]
+        "tags": ["courses"]
       }
     },
     "/api/v1/documents": {
@@ -1553,9 +1528,7 @@
           }
         },
         "summary": "Upload Document",
-        "tags": [
-          "documents"
-        ]
+        "tags": ["documents"]
       }
     },
     "/api/v1/documents/{document_id}": {
@@ -1629,9 +1602,7 @@
           }
         },
         "summary": "Get Document",
-        "tags": [
-          "documents"
-        ]
+        "tags": ["documents"]
       }
     },
     "/api/v1/extractions/{job_id}": {
@@ -1703,9 +1674,7 @@
           }
         },
         "summary": "Get Extraction",
-        "tags": [
-          "extractions"
-        ]
+        "tags": ["extractions"]
       }
     },
     "/api/v1/extractions/{job_id}/confirm": {
@@ -1813,9 +1782,7 @@
           }
         },
         "summary": "Confirm Extraction",
-        "tags": [
-          "extractions"
-        ]
+        "tags": ["extractions"]
       }
     },
     "/api/v1/extractions/{job_id}/fields/{field_id}": {
@@ -1938,9 +1905,7 @@
           }
         },
         "summary": "Decide Field",
-        "tags": [
-          "extractions"
-        ]
+        "tags": ["extractions"]
       }
     },
     "/api/v1/progress": {
@@ -2047,9 +2012,7 @@
           }
         },
         "summary": "Complete Session",
-        "tags": [
-          "progress"
-        ]
+        "tags": ["progress"]
       }
     },
     "/api/v1/progress/summary": {
@@ -2114,9 +2077,7 @@
           }
         },
         "summary": "Progress Summary",
-        "tags": [
-          "progress"
-        ]
+        "tags": ["progress"]
       }
     },
     "/api/v1/semesters": {
@@ -2199,9 +2160,7 @@
           }
         },
         "summary": "List Semesters",
-        "tags": [
-          "semesters"
-        ]
+        "tags": ["semesters"]
       },
       "post": {
         "operationId": "create_semester_api_v1_semesters_post",
@@ -2304,9 +2263,7 @@
           }
         },
         "summary": "Create Semester",
-        "tags": [
-          "semesters"
-        ]
+        "tags": ["semesters"]
       }
     },
     "/api/v1/semesters/{semester_id}": {
@@ -2378,9 +2335,7 @@
           }
         },
         "summary": "Get Semester",
-        "tags": [
-          "semesters"
-        ]
+        "tags": ["semesters"]
       }
     },
     "/api/v1/study-plans": {
@@ -2498,9 +2453,7 @@
           }
         },
         "summary": "Create Plan",
-        "tags": [
-          "study-plans"
-        ]
+        "tags": ["study-plans"]
       }
     },
     "/api/v1/study-plans/sessions/{session_id}": {
@@ -2616,9 +2569,7 @@
           }
         },
         "summary": "Update Session",
-        "tags": [
-          "study-plans"
-        ]
+        "tags": ["study-plans"]
       }
     },
     "/health/live": {
@@ -2641,9 +2592,7 @@
           }
         },
         "summary": "Live",
-        "tags": [
-          "health"
-        ]
+        "tags": ["health"]
       }
     },
     "/health/ready": {
@@ -2666,9 +2615,7 @@
           }
         },
         "summary": "Ready",
-        "tags": [
-          "health"
-        ]
+        "tags": ["health"]
       }
     }
   }

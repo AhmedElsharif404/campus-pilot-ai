@@ -1,10 +1,11 @@
 import hashlib
 import time
 
+from pydantic import ValidationError
 from sqlalchemy import delete, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from campus_pilot.ai.provider import provider_for
+from campus_pilot.ai.provider import PROMPT_VERSION, provider_for
 from campus_pilot.core.config import Settings
 from campus_pilot.core.models import (
     AIExecution,
@@ -15,6 +16,7 @@ from campus_pilot.core.models import (
 )
 from campus_pilot.core.telemetry import (
     ai_latency,
+    ai_schema_failures,
     document_processing_duration,
     extraction_failures,
 )
@@ -62,6 +64,7 @@ async def process_extraction_job(job_id: str, session: AsyncSession, settings: S
                 operation="extract_document",
                 provider=provider.name,
                 model="deterministic-mock" if provider.name == "mock" else "provider-managed",
+                prompt_version=PROMPT_VERSION,
                 latency_ms=int(latency * 1000),
                 schema_valid=True,
                 request_fingerprint=hashlib.sha256(document.sha256.encode()).hexdigest(),
@@ -73,6 +76,8 @@ async def process_extraction_job(job_id: str, session: AsyncSession, settings: S
         job.error_detail = None
         await session.commit()
     except Exception as error:
+        if isinstance(error, ValidationError):
+            ai_schema_failures.labels(operation="extract_document").inc()
         await session.rollback()
         job = await session.scalar(select(ExtractionJob).where(ExtractionJob.id == job_id))
         document = (

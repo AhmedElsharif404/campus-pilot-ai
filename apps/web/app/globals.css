@@ -1327,6 +1327,17 @@ a {
   color: var(--ink-muted);
   font-size: 0.72rem;
 }
+.demo-notice {
+  max-width: 42rem;
+  margin: 0;
+  border-left: 3px solid var(--amber);
+  background: var(--amber-soft);
+  color: var(--ink-muted);
+  padding: 0.75rem 0.9rem;
+  font-size: 0.76rem;
+  line-height: 1.55;
+  text-align: left;
+}
 .spin {
   animation: spin 1s linear infinite;
 }

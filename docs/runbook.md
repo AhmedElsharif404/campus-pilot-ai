@@ -2,7 +2,7 @@
 
 ## Service indicators
 
-Start with `/health/live`, then `/health/ready`. Inspect `HTTP_error_rate`, `job_queue_depth`, `extraction_failure_rate`, `document_processing_duration`, `AI_schema_failure_rate`, `AI_latency`, and `AI_cost_estimate`.
+Start with `/health/live`, then `/health/ready`. The current `/metrics` export includes `job_queue_depth`, `extraction_failure_total`, `document_processing_duration_seconds`, `ai_schema_failure_total`, and `ai_latency_seconds`, in addition to the standard Python process metrics. HTTP error-rate and provider cost metrics require deployment- or provider-specific instrumentation and must not be inferred from zero-valued placeholders.
 
 ## Extraction backlog
 

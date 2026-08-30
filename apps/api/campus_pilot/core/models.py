@@ -267,6 +267,7 @@ class AIExecution(TimestampMixin, Base):
     operation: Mapped[str] = mapped_column(String(60))
     provider: Mapped[str] = mapped_column(String(60))
     model: Mapped[str] = mapped_column(String(120))
+    prompt_version: Mapped[str] = mapped_column(String(80), default="academic-structured-v1")
     input_tokens: Mapped[int] = mapped_column(Integer, default=0)
     output_tokens: Mapped[int] = mapped_column(Integer, default=0)
     cost_estimate_usd: Mapped[float] = mapped_column(Float, default=0)

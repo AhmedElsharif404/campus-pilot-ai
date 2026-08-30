@@ -12,6 +12,7 @@ from campus_pilot.core.security import (
     current_user,
     hash_password,
     new_csrf_token,
+    require_csrf,
     verify_password,
 )
 
@@ -96,7 +97,11 @@ async def login(
     return UserView(id=user.id, email=user.email, display_name=user.display_name)
 
 
-@router.post("/logout", status_code=status.HTTP_204_NO_CONTENT)
+@router.post(
+    "/logout",
+    status_code=status.HTTP_204_NO_CONTENT,
+    dependencies=[Depends(require_csrf)],
+)
 async def logout(response: Response) -> None:
     response.delete_cookie("campus_pilot_session", path="/")
     response.delete_cookie("campus_pilot_csrf", path="/")

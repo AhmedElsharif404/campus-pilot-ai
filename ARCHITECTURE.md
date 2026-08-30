@@ -25,7 +25,7 @@ C4Container
   Container(web, "Web/PWA", "Next.js, TypeScript", "SSR shell, review UI, offline agenda and queued actions")
   Container(api, "API", "FastAPI, SQLAlchemy", "Auth, domain rules, human confirmation, versioned REST")
   Container(worker, "Worker", "Python", "PDF parsing, extraction, schema validation, retry")
-  ContainerDb(postgres, "System of record", "PostgreSQL + pgvector", "Users, academic data, provenance, audits")
+  ContainerDb(postgres, "System of record", "PostgreSQL (pgvector enabled)", "Users, academic data, provenance, audits; vector retrieval is future work")
   ContainerDb(redis, "Job/cache", "Redis", "Extraction queue and production limiter target")
   ContainerDb(objects, "Document store", "S3/MinIO", "Quarantined source PDFs")
   System_Ext(ai, "AI provider", "Optional")
@@ -80,5 +80,7 @@ Upload and planning requests accept idempotency keys. The database commit preced
 ## Deployment
 
 The web, API, and worker images are independently deployable. The API and worker use the same package and schema migration. Horizontal API and worker scaling is safe once the production rate limiter is Redis-backed and workers use PostgreSQL row locking or a queue visibility-timeout implementation appropriate to the deployment platform.
+
+The local PostgreSQL image and baseline migration enable pgvector so the storage boundary can evolve without replacing the database. No current table stores embeddings, and the extraction path is not represented as retrieval-augmented generation.
 
 Detailed tradeoffs are recorded in [docs/adr](docs/adr).

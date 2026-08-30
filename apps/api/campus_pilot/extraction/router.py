@@ -1,4 +1,5 @@
-from datetime import UTC, datetime, timedelta
+import re
+from datetime import UTC, date, datetime
 
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from pydantic import BaseModel, Field
@@ -15,11 +16,67 @@ from campus_pilot.core.models import (
     ExtractedField,
     ExtractionJob,
     Instructor,
+    Semester,
     User,
 )
 from campus_pilot.core.security import current_user, require_csrf
 
 router = APIRouter(prefix="/extractions", tags=["extractions"])
+
+_MONTHS = {
+    "jan": 1,
+    "feb": 2,
+    "mar": 3,
+    "apr": 4,
+    "may": 5,
+    "jun": 6,
+    "jul": 7,
+    "aug": 8,
+    "sep": 9,
+    "oct": 10,
+    "nov": 11,
+    "dec": 12,
+}
+_DATE_FRAGMENT = re.compile(
+    r"\b(Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|"
+    r"Jul(?:y)?|Aug(?:ust)?|Sep(?:t(?:ember)?)?|Oct(?:ober)?|Nov(?:ember)?|"
+    r"Dec(?:ember)?)\.?\s+(\d{1,2})(?:st|nd|rd|th)?(?:,?\s+(\d{4}))?\b",
+    re.IGNORECASE,
+)
+_TIME_FRAGMENT = re.compile(r"\b(\d{1,2})(?::(\d{2}))?\s*(am|pm)\b", re.IGNORECASE)
+
+
+def academic_datetime(
+    text: str, starts_on: date, ends_on: date, *, allow_end_of_day: bool
+) -> datetime | None:
+    date_match = _DATE_FRAGMENT.search(text)
+    if date_match is None:
+        return None
+    month = _MONTHS[date_match.group(1)[:3].lower()]
+    day = int(date_match.group(2))
+    explicit_year = int(date_match.group(3)) if date_match.group(3) else None
+    candidate: date | None = None
+    for year in [explicit_year] if explicit_year else sorted({starts_on.year, ends_on.year}):
+        try:
+            parsed = date(year, month, day)
+        except ValueError:
+            continue
+        if starts_on <= parsed <= ends_on:
+            candidate = parsed
+            break
+    if candidate is None:
+        return None
+    time_match = _TIME_FRAGMENT.search(text)
+    if time_match:
+        hour = int(time_match.group(1)) % 12
+        if time_match.group(3).lower() == "pm":
+            hour += 12
+        minute = int(time_match.group(2) or 0)
+    elif allow_end_of_day:
+        hour, minute = 23, 59
+    else:
+        return None
+    return datetime(candidate.year, candidate.month, candidate.day, hour, minute, tzinfo=UTC)
 
 
 class FieldView(BaseModel):
@@ -153,6 +210,11 @@ async def confirm_extraction(
     )
     if document is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Document not found")
+    semester = await session.scalar(
+        select(Semester).where(Semester.id == document.semester_id, Semester.user_id == user.id)
+    )
+    if semester is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Semester not found")
     fields = list(
         (
             await session.scalars(
@@ -185,25 +247,34 @@ async def confirm_extraction(
     )
     if instructor_name:
         session.add(Instructor(course_id=course.id, name=instructor_name[:160]))
-    fallback_due = datetime.now(UTC) + timedelta(days=7)
     for field in fields:
         if field.entity_type == "assignment":
+            due_at = academic_datetime(
+                value(field), semester.starts_on, semester.ends_on, allow_end_of_day=True
+            )
+            if due_at is None:
+                continue
             session.add(
                 Assignment(
                     user_id=user.id,
                     course_id=course.id,
                     title=value(field)[:240],
-                    due_at=fallback_due,
+                    due_at=due_at,
                     source_field_id=field.id,
                 )
             )
         elif field.entity_type == "exam":
+            starts_at = academic_datetime(
+                value(field), semester.starts_on, semester.ends_on, allow_end_of_day=False
+            )
+            if starts_at is None:
+                continue
             session.add(
                 Exam(
                     user_id=user.id,
                     course_id=course.id,
                     title=value(field)[:240],
-                    starts_at=fallback_due,
+                    starts_at=starts_at,
                     source_field_id=field.id,
                 )
             )

@@ -6,6 +6,7 @@
   "expected": {
     "course": "Data Structures",
     "instructor": "Dr. Lee",
+    "deadlines": ["November 2"],
     "minimum_grounded_fields": 3,
     "forbidden_hallucinations": ["user secrets", "deadlines deleted"]
   }

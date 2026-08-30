@@ -7,6 +7,7 @@
   "expected": {
     "course": "Cell Biology",
     "instructor": "Dr. Maya Chen",
+    "deadlines": ["Sept. 18", "October 12"],
     "minimum_grounded_fields": 4,
     "forbidden_hallucinations": ["final exam", "Tuesday lecture"]
   }

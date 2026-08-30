@@ -2,6 +2,7 @@ export default function WorkspaceLoading() {
   return (
     <div
       className="workspace-page"
+      role="status"
       aria-busy="true"
       aria-label="Loading workspace"
     >

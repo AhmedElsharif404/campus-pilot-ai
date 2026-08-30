@@ -11,14 +11,15 @@ test("critical student journey", async ({ page }) => {
     page.getByRole("heading", { name: /Good morning/ }),
   ).toBeVisible();
   await page.getByRole("link", { name: "Import syllabus" }).click();
-  await page.locator("input[type=file]").setInputFiles({
-    name: "BIO214_Syllabus_Fall2026.pdf",
-    mimeType: "application/pdf",
-    buffer: Buffer.from("%PDF-1.4 CampusPilot synthetic syllabus"),
-  });
+  await page
+    .locator("input[type=file]")
+    .setInputFiles("e2e/fixtures/syllabus.pdf");
   await expect(
     page.getByRole("button", { name: "Review extracted details" }),
   ).toBeVisible({ timeout: 10_000 });
+  await expect(
+    page.getByText(/Demo mode: the API was unavailable/),
+  ).toBeVisible();
   await page.getByRole("button", { name: "Review extracted details" }).click();
   await expect(
     page.getByRole("heading", { name: "Check what we found." }),

@@ -1,40 +1,90 @@
 # CampusPilot AI
 
-CampusPilot AI is a privacy-aware academic planning platform that turns syllabus PDFs into a structured, editable semester workspace. Every extracted value keeps its source document, page, confidence, and review decision. AI proposes; the student confirms.
+CampusPilot AI is a privacy-aware academic planning platform that turns syllabus PDFs into a structured, editable semester workspace. Extracted values retain their source page, evidence text, confidence, and review decision. AI proposes; the student confirms.
 
-## Why this project exists
+This repository is a **production-minded, portfolio-grade reference implementation**. It is not presented as a production deployment or a substitute for an institution's learning-management system.
 
-College students routinely translate inconsistent syllabi into calendars, reminders, and study plans by hand. CampusPilot treats that translation as a careful editorial workflow:
+## Overview
 
-1. Create a semester and upload a syllabus PDF.
-2. Validate and parse the document in an isolated asynchronous pipeline.
-3. Review proposed course details beside page-level evidence.
-4. Accept, edit, or reject every consequential field.
-5. Turn confirmed records into a semester calendar and realistic study plan.
-6. Adjust sessions, work offline where practical, and track follow-through.
+Students routinely translate inconsistent syllabi into calendars, reminders, and study plans by hand. CampusPilot models that work as an auditable workflow:
 
-## Product direction
+1. Create an account and semester.
+2. Upload a syllabus PDF into quarantine.
+3. Parse it asynchronously and validate structured extraction output.
+4. Review proposed academic fields beside page-level evidence.
+5. Accept, edit, or reject every consequential value.
+6. Create canonical course records only from approved data.
+7. Organize confirmed work into an agenda and editable study plan.
 
-The interface uses an Academic Editorial direction: warm paper surfaces, ink typography, compact ledgers, strong deadline semantics, and visible source evidence. The complete design foundation is in [docs/design-system.md](docs/design-system.md). Automated browser coverage verifies the critical journey, accessibility, offline shell, and horizontal-overflow behavior at mobile, tablet, laptop, and large-desktop widths.
+## Key Features
+
+- Academic Editorial web experience across semester overview, upload, extraction review, courses, calendar, assignments, study planning, daily agenda, progress, and settings
+- Versioned FastAPI surface for identity, semesters, courses, documents, extraction review, assignments, calendar, study plans, and progress
+- Redis-backed document jobs with idempotent upload handling and bounded retries
+- Local or S3-compatible quarantined object storage; MinIO is included for local development
+- Grounded extraction fields with confidence, source page, evidence text, and explicit `pending`, `accepted`, `edited`, or `rejected` state
+- Deterministic mock AI provider so extraction and planning can run without external credentials
+- PWA shell caching and an IndexedDB queue for explicit low-risk offline completion intents
+- Seeded synthetic demo workspace for interface review without real student data
+
+## Product Tour
+
+| Semester overview                                                   | Grounded extraction review                                                        |
+| ------------------------------------------------------------------- | --------------------------------------------------------------------------------- |
+| ![CampusPilot semester overview](docs/assets/semester-overview.png) | ![CampusPilot source-grounded syllabus review](docs/assets/extraction-review.png) |
+
+| Semester calendar                                                   | Study planner                                                      |
+| ------------------------------------------------------------------- | ------------------------------------------------------------------ |
+| ![CampusPilot semester calendar](docs/assets/semester-calendar.png) | ![CampusPilot weekly study planner](docs/assets/study-planner.png) |
 
 ## Architecture
 
-This repository is a modular monolith with separately deployable processes:
-
 ```text
-apps/
-  web/       Next.js 16, strict TypeScript, PWA/offline queue
-  api/       FastAPI, Pydantic, SQLAlchemy, Alembic
-  worker/    Redis-backed document extraction worker
-packages/
-  contracts/ Shared Zod contracts
+Next.js / strict TypeScript web + PWA
+                 │ versioned JSON API
+                 ▼
+FastAPI / Pydantic / SQLAlchemy modular monolith
+       │                 │                 │
+       ▼                 ▼                 ▼
+PostgreSQL          Redis job queue   S3 / MinIO quarantine
+       ▲                 │
+       └──── Python extraction worker ┘
 ```
 
-PostgreSQL/pgvector is the system of record, Redis holds jobs, and S3-compatible storage holds quarantined documents. Local development uses MinIO. The deterministic `MockAIProvider` makes the complete system usable without credentials; `RealProviderAdapter` preserves the same structured contract.
+PostgreSQL is the system of record. The development image includes pgvector and the migration enables its extension, but this release does not yet store embeddings or implement retrieval-augmented generation. Redis holds extraction jobs, and a separately deployable worker performs bounded PDF parsing and structured extraction. See [ARCHITECTURE.md](ARCHITECTURE.md) and the [architecture decisions](docs/adr).
 
-See [ARCHITECTURE.md](ARCHITECTURE.md) for boundaries and diagrams, [SECURITY.md](SECURITY.md) for controls, and [docs/threat-model.md](docs/threat-model.md) for the abuse analysis.
+## Technology Stack
 
-## Quick start
+| Layer         | Technology                                                                          |
+| ------------- | ----------------------------------------------------------------------------------- |
+| Web           | Next.js 16, React 19, TypeScript, service worker, IndexedDB, Zod                    |
+| API           | FastAPI, Pydantic, SQLAlchemy asyncio, Alembic                                      |
+| Worker        | Python, Redis, pypdf, the shared API/domain package                                 |
+| Data          | PostgreSQL with pgvector available, Redis, S3-compatible storage / MinIO            |
+| Security      | Argon2id, signed JWT sessions, double-submit CSRF, secure headers, Gitleaks, CodeQL |
+| Observability | OpenTelemetry traces, Prometheus metrics, health/readiness endpoints                |
+| Quality       | Pytest, Vitest, Playwright, axe-core, Ruff, mypy, ESLint, Prettier                  |
+
+## AI Safety and Grounding
+
+- Uploaded documents are delimited as untrusted data, never instructions.
+- `AIProvider` defines extraction, study planning, summarization, and classification contracts.
+- The real-provider adapter sends an explicit response schema and versioned prompt contract; returned data is validated with Pydantic.
+- The deterministic mock provider is credential-free and testable.
+- Extracted data remains provisional until every field receives a human decision.
+- Canonical assignments and exams retain `source_field_id` provenance.
+- Assignment dates are normalized only when a recognizable date falls inside the semester. Exams without an explicit time remain review data instead of receiving an invented timestamp.
+- Committed synthetic evals measure required-field detection, deadline detection, grounding, and forbidden hallucinations, including a prompt-injection case.
+
+## Security
+
+Implemented controls include Argon2id password hashing, short-lived signed sessions, HttpOnly/SameSite cookies, double-submit CSRF on cookie-authenticated mutations, object-level ownership filters, input validation, PDF MIME/signature/size/page bounds, quarantine storage, rate limiting, structured AI schemas, security headers, and audit events.
+
+The local limiter is intentionally process-local, and quarantine is not a substitute for production malware scanning. Deployment hardening and residual risks are documented in [SECURITY.md](SECURITY.md) and [docs/threat-model.md](docs/threat-model.md).
+
+## Local Development
+
+### Docker Compose
 
 Requirements: Docker Desktop and GNU Make.
 
@@ -46,25 +96,23 @@ make dev
 Then open:
 
 - Web: `http://localhost:3000`
-- API docs in development: `http://localhost:8000/api/docs`
+- Development API documentation: `http://localhost:8000/api/docs`
 - MinIO console: `http://localhost:9001`
 
-Seed data is created with:
+Seed the synthetic demo account:
 
 ```bash
 make seed
 ```
-
-Demo account:
 
 ```text
 Email: alex@northbridge.edu
 Password: CampusPilotDemo!2026
 ```
 
-The web app also includes an **Enter demo workspace** path so the design can be evaluated when infrastructure is not running.
+These credentials are intentionally public demo data and must never be reused in another environment.
 
-### Run services without Docker
+### Without Docker
 
 ```bash
 pnpm install
@@ -74,40 +122,60 @@ make worker    # terminal 2; requires Redis
 make web       # terminal 3
 ```
 
-SQLite is the safe local API fallback when `CAMPUS_DATABASE_URL` is omitted. PostgreSQL remains the production and integration-test target.
+When `CAMPUS_DATABASE_URL` is omitted, the API uses a local SQLite database for focused development and tests. PostgreSQL remains the integration and deployment target. To exercise the explicitly labeled front-end fallback without the API, start the web app with `NEXT_PUBLIC_DEMO_FALLBACK=true`.
 
-## Quality gates
+## Testing
 
 ```bash
 make verify
 ```
 
-The gate covers formatting, ESLint, strict TypeScript, Ruff, strict mypy, API/unit/authorization tests, browser E2E, accessibility, offline navigation, and the production web build. CI adds PostgreSQL and Redis integration checks, committed AI evals, dependency auditing, CodeQL, and secret scanning.
+The repository includes:
 
-Critical browser coverage follows the real journey: upload syllabus → review extraction → approve fields → create course → rebalance study plan → complete study session.
+- API, authorization, document-validation, extraction-schema, and deadline-normalization tests
+- PostgreSQL and Redis integration tests activated by `TEST_POSTGRES_URL` and `TEST_REDIS_URL`
+- Vitest component tests
+- Playwright journey, accessibility, offline-shell, and responsive-overflow coverage
+- Synthetic AI grounding and prompt-injection evals
+- Dependency, secret, and CodeQL workflows
 
-## Privacy and AI safety
+CI provisions PostgreSQL and Redis before running the integration suite. A local integration test that is skipped because its service URL is absent must not be represented as passing.
 
-- Uploaded documents are untrusted data, not instructions.
-- PDFs are size-, MIME-, and signature-validated before quarantine.
-- Extracted fields remain provisional until a student makes a decision.
-- Canonical academic items retain `source_field_id` provenance.
-- Object-level authorization filters every user-owned query.
-- AI responses are validated through structured Pydantic schemas.
-- Study planning may move proposed sessions, never confirmed academic events.
-- External AI credentials are optional; the mock provider is the default.
+## Observability
 
-## Current limitations
+- `/health/live` and database-backed `/health/ready` endpoints
+- `/metrics` Prometheus export
+- Document-processing duration, extraction failures, AI latency, AI schema failures, and worker queue-depth metrics
+- OpenTelemetry instrumentation for FastAPI and SQLAlchemy with optional OTLP export
+- Per-execution provider, model, prompt version, schema validity, request fingerprint, and latency metadata
 
-- OCR is a defined fallback boundary, but the repository image does not yet bundle a native OCR engine; image-only PDFs fail safely for manual handling.
-- The real-provider adapter targets a generic structured HTTP contract and needs a provider-specific production adapter, cost policy, and redaction review before deployment.
-- Local rate limiting is process-local; production should back the limiter with Redis.
-- Email/push notification delivery is modeled but not connected to an external provider.
-- Calendar sync with institutional LMS or Google/Apple calendars is deliberately outside this first milestone.
+Provider token counts and cost estimates are modeled but remain zero until a provider-specific adapter supplies trusted usage data. Proposed pilot SLOs are documented in [docs/slo.md](docs/slo.md); they are targets, not measured production claims.
 
-## Next production milestone
+## Known Limitations
 
-The next milestone is a limited university pilot: complete native OCR and malware scanning, add an institution-reviewed retention policy, run the eval suite against anonymized opt-in syllabi, complete provider-specific AI and cost controls, and conduct an external accessibility and penetration test.
+- Image-only PDFs fail safely because a native OCR engine is not bundled yet.
+- Production malware scanning and a reviewed document-retention/deletion policy are still required.
+- The real-provider adapter targets a generic structured HTTP contract and needs provider-specific authentication, redaction, retry, quota, and usage-accounting policy.
+- The web includes a clearly labeled synthetic demo workspace; several planning and reporting screens render seeded demo data rather than querying live API records.
+- Ambiguous dates remain provisional. Assignments without a semester-valid date and exams without an explicit time are not made canonical.
+- pgvector is enabled for future semantic retrieval but is not used by the current extraction path.
+- Offline completion intents are retained locally, but automatic replay/conflict reconciliation is not implemented.
+- Rate limiting is per-process; a multi-instance deployment should move it to Redis.
+- Notification records exist, but email and push delivery are not connected to an external provider.
+- External LMS and Google/Apple calendar synchronization are outside this release.
+
+## Roadmap
+
+The next production milestone is a limited university pilot: native OCR and malware scanning, a reviewed retention policy, complete live-data wiring for remaining web views, offline replay/conflict handling, provider-specific AI budgets and usage accounting, anonymized opt-in eval expansion, and external accessibility and penetration testing.
+
+## Documentation
+
+- [Product and information architecture](docs/product.md)
+- [Implementation conventions](docs/architecture.md)
+- [Threat model](docs/threat-model.md)
+- [Operations runbook](docs/runbook.md)
+- [Proposed SLOs](docs/slo.md)
+- [Contributing](CONTRIBUTING.md)
 
 ## License
 
