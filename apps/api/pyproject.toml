@@ -23,7 +23,7 @@ dependencies = [
   "opentelemetry-sdk==1.37.0",
   "prometheus-client==0.22.1",
   "pydantic==2.13.4",
-  "pydantic-settings==2.10.1",
+  "pydantic-settings==2.15.0",
   "pypdf==6.16.2",
   "pyjwt==2.13.0",
   "python-multipart==0.0.32",
