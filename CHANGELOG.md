@@ -4,6 +4,8 @@ All notable changes follow Keep a Changelog conventions. This project uses seman
 
 ## [Unreleased]
 
+## [0.1.0] - 2026-08-30
+
 ### Added
 
 - Academic Editorial Next.js PWA covering landing, auth, onboarding, upload, processing, grounded review, semester, course, calendar, assignments, study planning, today, progress, and settings
