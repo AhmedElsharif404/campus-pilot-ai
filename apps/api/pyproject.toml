@@ -19,7 +19,7 @@ dependencies = [
   "opentelemetry-api==1.37.0",
   "opentelemetry-exporter-otlp==1.37.0",
   "opentelemetry-instrumentation-fastapi==0.58b0",
-  "opentelemetry-instrumentation-sqlalchemy==0.58b0",
+  "opentelemetry-instrumentation-sqlalchemy==0.65b0",
   "opentelemetry-sdk==1.37.0",
   "prometheus-client==0.22.1",
   "pydantic==2.13.4",
