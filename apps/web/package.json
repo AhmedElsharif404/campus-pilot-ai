@@ -14,27 +14,27 @@
   },
   "dependencies": {
     "@campuspilot/contracts": "workspace:*",
-    "idb": "8.0.3",
+    "idb": "8.0.4",
     "lucide-react": "0.544.0",
-    "next": "16.3.2",
-    "react": "19.2.8",
-    "react-dom": "19.2.8",
-    "zod": "4.1.11"
+    "next": "16.4.0",
+    "react": "19.3.0",
+    "react-dom": "19.3.0",
+    "zod": "4.6.5"
   },
   "devDependencies": {
-    "@axe-core/playwright": "4.10.2",
-    "@playwright/test": "1.62.1",
+    "@axe-core/playwright": "4.13.0",
+    "@playwright/test": "1.64.0",
     "@testing-library/jest-dom": "6.8.0",
-    "@testing-library/react": "16.3.0",
+    "@testing-library/react": "16.3.3",
     "@types/node": "24.5.2",
-    "@types/react": "19.1.13",
-    "@types/react-dom": "19.1.9",
-    "@vitejs/plugin-react": "6.1.0",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "@vitejs/plugin-react": "6.1.2",
     "eslint": "9.35.0",
-    "eslint-config-next": "16.3.2",
+    "eslint-config-next": "16.4.0",
     "jsdom": "27.0.0",
     "typescript": "6.0.2",
-    "vite": "8.2.2",
+    "vite": "8.3.4",
     "vitest": "4.1.11"
   }
 }
